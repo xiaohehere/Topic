@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>茂名市各区日均流量话务量大数据展示</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="../styles/common.css" rel="stylesheet">
+    <script src="../scripts/Plugin/jquery-3.3.1.min.js"></script>
+    <script src="../scripts/Plugin/echarts.min.js"></script>
+    <script src="../scripts/Plugin/bmap.min.js"></script>
+    <script src="http://api.map.baidu.com/api?v=2.0&ak=AgasQmKK2z6YZjy4w5dFPY93c6uPw7RI"></script>
+    <script src="../scripts/common.js"></script>
+    <script src="../scripts/index.js"></script>
+    <script src="../scripts/Plugin/laydate/laydate.js"></script>
+    <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+</head>
+
+<body>
+    <!--顶部-->
+    <header class="header left">
+        <div class="left nav">
+            <ul>
+                <li class="nav_active"><i class="nav_1"></i><a href="index.html">数据概况</a> </li>
+                <!--<li><i class="nav_2"></i><a href="quota.html">指标分析</a> </li>-->
+                <!--<li><i class="nav_3"></i><a href="trend.html">趋势分析</a> </li>-->
+                <li><i class="nav_4"></i><a href="chronic111.html">异常小区列表</a> </li>
+            </ul>
+        </div>
+        <div class="header_center left" style="position:relative">
+            <h2><strong>茂名市各区日均流量话务量大数据展示</strong></h2>
+        </div>
+        <div class="right nav text_right">
+            <ul>
+            </ul>
+        </div>
+    </header>
+    <!--内容部分-->
+    <div class="con left" >
+        <!--数据总概-->
+        <div class="con_div" >
+            <div class="con_div_text left">
+                <div class="con_div_text01 left">
+                    <img src="../images/1721613407268.jpg" class="left text01_img" />
+                    <div class="left text01_div">
+                        <p>总日均流量(GB)</p>
+                        <p id="t2" class="sky">908858</p>
+                    </div>
+                </div>
+                <div class="con_div_text01 right">
+                    <img src="../images/1721613407268.jpg" class="left text01_img" />
+                    <div class="left text01_div">
+                        <p>总日均话务量(Erl)</p>
+                        <p id="t3" class="sky">94159</p>
+                    </div>
+                </div>
+            </div>
+            <div class="con_div_text left">
+                <form id="uploadForm">
+                    <div style="position: relative;">
+                        <button type="button" id="file1Button">Choose first Excel file</button>
+                        <input type="file" id="file1" name="file1" accept=".xlsx" style="position: absolute; top: 0; left: 0; opacity: 0; width: 100%; height: 100%;">
+                    </div>
+                    <div style="position: relative;">
+                        <label for="region">选择区域:</label>
+                        <select id="region" name="region">
+                            <option value="茂南区">茂南区</option>
+                            <option value="电白区">电白区</option>
+                            <option value="化州市">化州市</option>
+                            <option value="信宜市">信宜市</option>
+                            <option value="高州市">高州市</option>
+                        </select>
+                    </div>
+                    <div style="position: relative;">
+                        <button type="button" id="file2Button">Choose second Excel file</button>
+                        <input type="file" id="file2" name="file2" accept=".xlsx" style="position: absolute; top: 0; left: 0; opacity: 0; width: 100%; height: 100%;">
+                    </div>
+                    <br>
+                    <button type="button" onclick="uploadFiles()">Upload and Process</button>
+                </form>
+                <p id="message"></p>
+            </div>
+        </div>
+        <script>
+            document.getElementById('file1').addEventListener('change', function() {
+                document.getElementById('file1Button').textContent = 'File selected: ' + this.files[0].name;
+            });
+        
+            document.getElementById('file2').addEventListener('change', function() {
+                document.getElementById('file2Button').textContent = 'File selected: ' + this.files[0].name;
+            });
+        
+            function uploadFiles() {
+                const formData = new FormData(document.getElementById('uploadForm'));
+                fetch('http://127.0.0.1:5700/upload', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('message').textContent = data.message + ". Download the output file: " + data.output_file;
+                })
+                .catch(error => {
+                    document.getElementById('message').textContent = "An error occurred: " + error.message;
+                });
+            }
+        </script>
+        <button type="button" id="uploadButton" style="position: relative;">
+            上传文件
+            <input type="file" id="fileInput" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;">
+        </button>
+        <script>
+            document.getElementById('fileInput').addEventListener('change', function() {
+                alert('文件已选择');
+            });
+        </script>
+        <!--统计分析图-->
+        <div class="div_any">
+            <div class="left div_any01">
+                <div class="div_any_child">
+                    <div class="div_any_title"><img src="../images/title_1.png">各区流量统计</div>
+                    <p id="pieChart1" class="p_chart"></p>
+                </div>
+                <div class="div_any_child">
+                    <div class="div_any_title"><img src="../images/title_2.png">各区话务量统计</div>
+                    <p id="histogramChart" class="p_chart"></p>
+                </div>
+            </div>
+            <div class="div_any02 left ">
+                <div class="div_any_child div_height">
+                    <div class="div_any_title any_title_width"><img src="../images/title_0.png">茂名市地图 </div>
+                    <div id="mapChart"
+                        style="width:97.5%;height:95%;display: inline-block;padding-left: 1.25%;padding-top:2.2%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        function async_data() {
+            async_map_data();
+            async_chart_2_data();
+            // 定时从服务器更新数据
+            setTimeout(async_data, 1000);
+        }
+
+        $(document).ready(function () {
+            async_data();
+        });
+    </script>
+</body>
+
+</html>

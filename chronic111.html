@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>数据可视化demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="../styles/common.css" rel="stylesheet">
+    <link href="../styles/bootstrap.min.css" rel="stylesheet">
+    <link href="../styles/bootstrap-table.css" rel="stylesheet">
+    <link href="../styles/pagination.css" rel="stylesheet">
+    <script src="../scripts/Plugin/jquery-3.3.1.min.js"></script>
+    <script src="../scripts/Plugin/echarts.min.js"></script>
+    <script src="../scripts/Plugin/jquery.pagination.min.js"></script>
+    <script src="../scripts/common.js"></script>
+    <script src="../scripts/chronic.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+</head>
+<body>
+<!--顶部-->
+<header class="header left">
+    <div class="left nav">
+        <ul>
+            <li><i class="nav_1"></i><a href="index.html">数据概况</a> </li>
+            <!--li><i class="nav_2"></i><a href="quota.html">指标分析</a> </li>
+            <li><i class="nav_3"></i><a href="trend.html">趋势分析</a> </li>-->
+            <li class="nav_active"><i class="nav_4"></i><a href="chronic.html">异常小区列表</a> </li>
+          </ul>
+    </div>
+    <div class="header_center left" style="position:relative">
+        <h2><strong>茂名市各区日均流量话务量大数据展示</strong></h2>
+    </div>
+    <div class="right nav text_right">
+        <ul>
+        </ul>
+    </div>
+</header>
+<!--内容部分-->
+<div class="con left" style="width: 98%;margin-left: 1%;margin-bottom: 25px;">
+    <input type="file" id="fileInput" />
+    <div class="div_any_child">
+        <div class="table_p" style="height: 96%;margin-top: 20px;">
+            <table id="dataTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>区域名</th>
+                        <th>逻辑站点名</th>
+                        <th>GB</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+        <div class="box">
+            <div id="pagination" class="page fl"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+        var file = e.target.files[0];
+        var reader = new FileReader();
+
+        reader.onload = function(event) {
+            var data = new Uint8Array(event.target.result);
+            var workbook = XLSX.read(data, {type: 'array'});
+            var firstSheetName = workbook.SheetNames[0];
+            var worksheet = workbook.Sheets[firstSheetName];
+            var json = XLSX.utils.sheet_to_json(worksheet);
+
+            // 按话务量排序并挑选前十的数据
+            var top10 = json.sort((a, b) => b['话务量'] - a['话务量']).slice(0, 10);
+
+            // 将数据插入到表格中
+            var tbody = document.querySelector('#dataTable tbody');
+            tbody.innerHTML = ''; // 清空表格内容
+            top10.forEach((row, index) => {
+                var tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${row['ID_prefix']}</td>
+                    <td>${row['区域']}</td>
+                    <td>${row['逻辑站点名']}</td>
+                    <td>${row['GB']}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        };
+
+        reader.readAsArrayBuffer(file);
+    });
+</script>
+</body>
+</html>
